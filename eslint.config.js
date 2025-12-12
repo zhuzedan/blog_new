@@ -29,7 +29,9 @@ export default [
         document: 'readonly',
         navigator: 'readonly',
         console: 'readonly',
-        process: 'readonly'
+        process: 'readonly',
+        requestAnimationFrame: 'readonly',
+        setTimeout: 'readonly'
       }
     }
   },

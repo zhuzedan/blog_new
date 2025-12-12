@@ -138,7 +138,6 @@ const pageSize = ref(6)
 let typed = null
 
 const articles = computed(() => blogStore.latestArticles)
-const authorInfo = computed(() => blogStore.authorInfo)
 const recommendedArticles = computed(() => blogStore.recommendedArticles)
 const dynamics = computed(() => blogStore.dynamics)
 

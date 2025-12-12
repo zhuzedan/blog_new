@@ -143,7 +143,10 @@ const md = new MarkdownIt({
           highlighted +
           '</code></pre>'
         )
-      } catch (__) {}
+      } catch (err) {
+        // 忽略高亮错误，继续处理
+        console.warn('代码高亮错误:', err)
+      }
     }
     const escaped = md.utils.escapeHtml(str)
     return (

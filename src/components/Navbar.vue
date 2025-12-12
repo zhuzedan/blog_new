@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar" :class="{ scrolled: isScrolled, hidden: isHidden }">
+  <nav class="navbar" :class="{ scrolled: isScrolled }">
     <div class="navbar-content">
       <div class="logo">
         <router-link to="/" class="logo-text">Zella</router-link>
@@ -11,6 +11,9 @@
         <li>
           <router-link to="/moments" class="nav-link" active-class="active">说说</router-link>
         </li>
+        <li>
+          <router-link to="/about" class="nav-link" active-class="active">关于</router-link>
+        </li>
       </ul>
     </div>
   </nav>
@@ -20,25 +23,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const isScrolled = ref(false)
-const isHidden = ref(false)
-let lastScrollTop = 0
 
 const handleScroll = () => {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop
 
   // Determine if scrolled
   isScrolled.value = scrollTop > 10
-
-  // More sensitive scroll detection for showing/hiding
-  if (scrollTop > lastScrollTop && scrollTop > 10) {
-    // Scrolling down - hide navbar
-    isHidden.value = true
-  } else if (scrollTop < lastScrollTop || scrollTop <= 10) {
-    // Scrolling up or at top - show navbar
-    isHidden.value = false
-  }
-
-  lastScrollTop = scrollTop <= 0 ? 0 : scrollTop
 }
 
 onMounted(() => {
@@ -55,7 +45,8 @@ $primary-color: #0071e3;
 $text-dark: #1d1d1f;
 $text-light: #86868b;
 $white: #ffffff;
-$navbar-height: 60px;
+$black: #000000;
+$navbar-height: 50px;
 $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
 .navbar {
@@ -64,25 +55,20 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   left: 0;
   right: 0;
   height: $navbar-height;
-  // Poetize.cn style - clean and minimal
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px) saturate(180%);
-  -webkit-backdrop-filter: blur(10px) saturate(180%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+  // 极简设计 - 默认状态为透明
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: none;
+  box-shadow: none;
   z-index: 1000;
   transition: all 0.3s ease;
 
+  // 滚动时显示纯色背景
   &.scrolled {
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  }
-
-  &.hidden {
-    transform: translateY(-100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   }
 
   .navbar-content {
@@ -106,6 +92,7 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       &:hover {
         color: $primary-color;
+        opacity: 0.8;
       }
     }
   }
@@ -119,7 +106,7 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     .nav-link {
       color: $text-light;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 500;
       padding: 0.5rem 0;
       transition: $transition;
@@ -128,23 +115,16 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-block;
       position: relative;
 
+      // 悬停效果 - 简单的颜色变化和透明度
       &:hover {
         color: $primary-color;
+        opacity: 0.8;
       }
 
+      // 激活状态
       &.active {
         color: $primary-color;
-
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: -5px;
-          left: 0;
-          width: 100%;
-          height: 2px;
-          background: $primary-color;
-          border-radius: 1px;
-        }
+        font-weight: 600;
       }
     }
   }

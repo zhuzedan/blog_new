@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-const getParticleStyle = (index) => {
+const getParticleStyle = () => {
   const randomX = Math.random() * 100
   const randomY = Math.random() * 100
   const randomSize = Math.random() * 3 + 1
