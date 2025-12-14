@@ -262,14 +262,7 @@ const goToArticle = (id) => {
 
 <style scoped lang="scss">
 // Variables - Updated to minimal theme
-$primary-color: #0071e3;
-$secondary-color: #303030;
-$text-dark: #1d1d1f;
-$text-light: #86868b;
-$bg-light: #f5f5f7;
-$white: #ffffff;
-$navbar-height: 70px;
-$transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+@use '../styles/variables.scss' as *;
 
 .article-container {
   min-height: 100vh;

@@ -33,7 +33,7 @@
   width: 100%;
   height: 15vh;
   min-height: 100px;
-  max-height: 150px;
+  max-height: 100px;
   z-index: 3;
 
   .wave {

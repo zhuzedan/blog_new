@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 
+import zellaAvatar from '../assets/zella-avatar.svg'
+
 export const useBlogStore = defineStore('blog', {
   state: () => ({
     articles: [
@@ -162,10 +164,17 @@ console.log('Hello World');
     ],
     authorInfo: {
       name: 'Zella',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200',
+      avatar: zellaAvatar,
       motto: '再渺小的星光，也有属于他的光芒!',
       intro:
-        '一直对网站开发领域很感兴趣，从小就希望有一个属于自己的网站，在17年时候成功进入站长圈，并通过各种自学，以及各种折腾，才有了你现在看到的这个网站'
+        '一直对网站开发领域很感兴趣，从小就希望有一个属于自己的网站，在17年时候成功进入站长圈，并通过各种自学，以及各种折腾，才有了你现在看到的这个网站',
+      socials: {
+        github: 'https://github.com/',
+        email: 'mailto:example@example.com',
+        bilibili: 'https://www.bilibili.com/',
+        juejin: 'https://juejin.cn/',
+        wechat: ''
+      }
     },
     dynamics: [
       { id: 1, content: '更新了博客样式', time: '2025-12-10 14:30' },

@@ -2,7 +2,10 @@
   <nav class="navbar" :class="{ scrolled: isScrolled }">
     <div class="navbar-content">
       <div class="logo">
-        <router-link to="/" class="logo-text">Zella</router-link>
+        <router-link to="/" class="logo-link">
+          <img src="../assets/logo.svg" alt="Zella" class="logo-img" />
+          <span class="logo-text">Zella</span>
+        </router-link>
       </div>
       <ul class="nav-menu">
         <li>
@@ -41,11 +44,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-$primary-color: #0071e3;
-$text-dark: #1d1d1f;
-$text-light: #86868b;
-$white: #ffffff;
-$black: #000000;
+@use '../styles/variables.scss' as *;
 $navbar-height: 50px;
 $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -82,6 +81,19 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .logo {
+    .logo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+    }
+
+    .logo-img {
+      width: 30px;
+      height: 30px;
+      display: block;
+    }
+
     .logo-text {
       font-size: 1.5rem;
       font-weight: 700;
@@ -89,10 +101,17 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       letter-spacing: -0.5px;
       transition: $transition;
       text-decoration: none;
+    }
 
-      &:hover {
+    .logo-link:hover {
+      .logo-text {
         color: $primary-color;
-        opacity: 0.8;
+        opacity: 0.85;
+      }
+
+      .logo-img {
+        transform: translateY(-0.5px);
+        transition: $transition;
       }
     }
   }

@@ -6,11 +6,7 @@
     <!-- Hero Section - Full Background Image -->
     <section class="hero-section">
       <div class="hero-background">
-        <img
-          src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=1920&q=80"
-          alt="Background"
-          class="hero-image"
-        />
+        <img src="../assets/wallpaper.png" alt="Background" class="hero-image" />
       </div>
 
       <!-- Typing Effect Only -->
@@ -31,6 +27,98 @@
 
     <!-- Main Content -->
     <div id="articles" class="main-content">
+      <div class="top-wrapper">
+        <div class="recommended-section">
+          <div class="recommended-shell">
+            <button class="rec-arrow rec-arrow-left" type="button" @click="scrollRecommended(-1)">
+              <LeftOutlined />
+            </button>
+
+            <div ref="recommendedScrollRef" class="recommended-scroll">
+              <div
+                v-for="article in recommendedArticles"
+                :key="article.id"
+                class="recommended-item"
+                @click="goToArticle(article.id)"
+              >
+                <img :src="article.cover" :alt="article.title" class="recommended-cover" />
+                <div class="recommended-overlay">
+                  <div class="recommended-overlay-title">{{ article.title }}</div>
+                </div>
+              </div>
+            </div>
+
+            <button class="rec-arrow rec-arrow-right" type="button" @click="scrollRecommended(1)">
+              <RightOutlined />
+            </button>
+
+            <div class="rec-dots">
+              <button
+                v-for="(_, i) in recommendedArticles"
+                :key="i"
+                class="rec-dot"
+                :class="{ active: i === recommendedIndex }"
+                type="button"
+                @click="scrollToRecommended(i)"
+              ></button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="top-side">
+          <a-card class="sidebar-card author-card" :bordered="false">
+            <div class="author-profile">
+              <img :src="authorInfo.avatar" alt="Author" class="author-avatar" />
+              <div class="author-name">{{ authorInfo.name }}</div>
+              <div class="author-motto">{{ authorInfo.motto }}</div>
+            </div>
+
+            <div class="author-actions">
+              <a
+                v-if="authorInfo.socials?.github"
+                class="author-link"
+                :href="authorInfo.socials.github"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="GitHub"
+              >
+                <GithubOutlined />
+              </a>
+              <a
+                v-if="authorInfo.socials?.email"
+                class="author-link"
+                :href="authorInfo.socials.email"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Email"
+              >
+                <MailOutlined />
+              </a>
+              <a
+                v-if="authorInfo.socials?.juejin"
+                class="author-link"
+                :href="authorInfo.socials.juejin"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="掘金"
+              >
+                <LinkOutlined />
+              </a>
+              <a
+                v-if="authorInfo.socials?.bilibili"
+                class="author-link"
+                :href="authorInfo.socials.bilibili"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Bilibili"
+              >
+                <PlayCircleOutlined />
+              </a>
+            </div>
+          </a-card>
+        </aside>
+      </div>
+
       <div class="content-wrapper">
         <!-- Left Section: Articles -->
         <div class="articles-section">
@@ -103,17 +191,6 @@
               </a-timeline-item>
             </a-timeline>
           </a-card>
-
-          <!-- Author Recommendations -->
-          <a-card title="🌟 作者推荐" class="sidebar-card">
-            <a-list size="small" :data-source="recommendedArticles">
-              <template #renderItem="{ item }">
-                <a-list-item>
-                  <a @click="goToArticle(item.id)">{{ item.title }}</a>
-                </a-list-item>
-              </template>
-            </a-list>
-          </a-card>
         </aside>
       </div>
     </div>
@@ -124,7 +201,17 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBlogStore } from '../store/blog'
-import { EyeOutlined, CalendarOutlined, DownOutlined } from '@ant-design/icons-vue'
+import {
+  EyeOutlined,
+  CalendarOutlined,
+  DownOutlined,
+  GithubOutlined,
+  MailOutlined,
+  LinkOutlined,
+  PlayCircleOutlined,
+  LeftOutlined,
+  RightOutlined
+} from '@ant-design/icons-vue'
 import Typed from 'typed.js'
 import WaveEffect from '../components/WaveEffect.vue'
 import Navbar from '../components/Navbar.vue'
@@ -135,11 +222,14 @@ const blogStore = useBlogStore()
 const typedElement = ref(null)
 const currentPage = ref(1)
 const pageSize = ref(6)
+const recommendedScrollRef = ref(null)
+const recommendedIndex = ref(0)
 let typed = null
 
 const articles = computed(() => blogStore.latestArticles)
 const recommendedArticles = computed(() => blogStore.recommendedArticles)
 const dynamics = computed(() => blogStore.dynamics)
+const authorInfo = computed(() => blogStore.authorInfo)
 
 // Paginated articles
 const paginatedArticles = computed(() => {
@@ -181,6 +271,17 @@ onMounted(() => {
     showCursor: true,
     cursorChar: '|'
   })
+
+  const el = recommendedScrollRef.value
+  if (el) {
+    const onScroll = () => {
+      const width = el.clientWidth || 1
+      recommendedIndex.value = Math.round(el.scrollLeft / width)
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    recommendedScrollRef.value.__onScroll = onScroll
+  }
 })
 
 onUnmounted(() => {
@@ -188,19 +289,31 @@ onUnmounted(() => {
   if (typed) {
     typed.destroy()
   }
+
+  const el = recommendedScrollRef.value
+  if (el && el.__onScroll) {
+    el.removeEventListener('scroll', el.__onScroll)
+    delete el.__onScroll
+  }
 })
+
+const scrollToRecommended = (index) => {
+  const el = recommendedScrollRef.value
+  if (!el) return
+  const width = el.clientWidth || 0
+  el.scrollTo({ left: width * index, behavior: 'smooth' })
+}
+
+const scrollRecommended = (direction) => {
+  const maxIndex = Math.max(0, recommendedArticles.value.length - 1)
+  const next = Math.min(maxIndex, Math.max(0, recommendedIndex.value + direction))
+  scrollToRecommended(next)
+}
 </script>
 
 <style scoped lang="scss">
 // Variables - Updated to minimal theme
-$primary-color: #0071e3;
-$secondary-color: #303030;
-$text-dark: #1d1d1f;
-$text-light: #86868b;
-$bg-light: #f5f5f7;
-$white: #ffffff;
-$navbar-height: 70px;
-$transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+@use '../styles/variables.scss' as *;
 
 .home-container {
   min-height: 100vh;
@@ -225,11 +338,31 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     bottom: 0;
     z-index: 1;
 
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.1) 45%,
+        rgba(0, 0, 0, 0.35) 100%
+      );
+      z-index: 2;
+    }
+
     .hero-image {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
       filter: brightness(0.9);
+      z-index: 1;
     }
   }
 
@@ -245,24 +378,31 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .typed-wrapper {
-    min-height: 60px;
-    padding: 2rem 3rem;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(30px) saturate(150%);
-    border-radius: 20px;
+    min-height: 44px;
+    padding: 1.1rem 1.6rem;
+    background: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-radius: 16px;
     box-shadow:
       0 10px 30px rgba(0, 0, 0, 0.1),
       0 0 0 1px rgba(255, 255, 255, 0.5) inset;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     max-width: 80%;
     margin: 0 auto;
 
     .typed-text {
-      font-size: 1.8rem;
+      font-size: 1.25rem;
       color: $text-dark;
       font-weight: 600;
       line-height: 1.6;
     }
+  }
+}
+
+.hero-background {
+  .hero-image {
+    border-radius: 0;
   }
 }
 
@@ -308,6 +448,21 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 50vh;
 }
 
+.top-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+  align-items: start;
+  margin-bottom: 2.2rem;
+}
+
+.top-side {
+  position: relative;
+}
+
 .content-wrapper {
   max-width: 1400px;
   margin: 0 auto;
@@ -315,6 +470,232 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: grid;
   grid-template-columns: 1fr 350px;
   gap: 2rem;
+}
+
+.recommended-section {
+  margin-bottom: 0;
+}
+
+.recommended-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.recommended-title {
+  margin-bottom: 0;
+}
+
+.recommended-hint {
+  color: $text-light;
+  font-size: 0.9rem;
+}
+
+.recommended-shell {
+  position: relative;
+}
+
+.recommended-scroll {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  border-radius: 18px;
+}
+
+.recommended-scroll::-webkit-scrollbar {
+  height: 0;
+}
+
+.recommended-item {
+  scroll-snap-align: start;
+  position: relative;
+  cursor: pointer;
+  height: 280px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  transition: $transition;
+}
+
+.recommended-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+}
+
+.recommended-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.05) contrast(1.02);
+}
+
+.recommended-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.35) 55%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
+.recommended-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.25rem 1.25rem 1.1rem;
+  z-index: 2;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.recommended-overlay-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: $white;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.recommended-overlay-meta {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+}
+
+.rec-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  color: $white;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  cursor: pointer;
+  transition: $transition;
+}
+
+.rec-arrow:hover {
+  background: rgba(0, 0, 0, 0.35);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.rec-arrow-left {
+  left: 14px;
+}
+
+.rec-arrow-right {
+  right: 14px;
+}
+
+.rec-dots {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.rec-dot {
+  width: 26px;
+  height: 4px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.14);
+  cursor: pointer;
+  transition: $transition;
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.author-card {
+  border-radius: 16px;
+}
+
+.author-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.author-profile {
+  text-align: center;
+  padding: 0.4rem 0 0.2rem;
+}
+
+.author-name {
+  margin-top: 0.85rem;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: $text-dark;
+  line-height: 1.2;
+}
+
+.author-motto {
+  margin-top: 0.55rem;
+  color: $text-light;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.author-actions {
+  margin-top: 1.1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.author-link {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-dark;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: $transition;
+}
+
+.author-link:hover {
+  color: $primary-color;
+  background: rgba(0, 113, 227, 0.08);
+  transform: translateY(-2px);
 }
 
 .section-title {
@@ -563,12 +944,12 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
 // Responsive
 @media (max-width: 1024px) {
-  .content-wrapper {
+  .top-wrapper {
     grid-template-columns: 1fr;
   }
 
-  .sidebar {
-    order: -1;
+  .content-wrapper {
+    grid-template-columns: 1fr;
   }
 
   .hero-card {

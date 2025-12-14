@@ -4,6 +4,7 @@ import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
 import './style.css'
 import './styles/minimal-theme.css'
+import './styles/layout.css'
 import App from './App.vue'
 import router from './router'
 
